@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chainwatch</title>
+  <meta name="description" content="Runtime control plane for AI agent safety. Intercepts tool calls at irreversible boundaries.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0E1116;
+      color: #CDD6E0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.7;
+      padding: 2rem 1.5rem;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      margin-bottom: 1rem;
+      color: #CDD6E0;
+    }
+    ul {
+      margin-bottom: 1rem;
+      padding-left: 1.25rem;
+    }
+    li {
+      margin-bottom: 0.35rem;
+    }
+    a { color: #CDD6E0; }
+    code {
+      background: #1C2128;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    pre {
+      background: #1C2128;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .meta {
+      color: #7C8590;
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+    }
+    .install-link {
+      display: inline-block;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      padding: 0.6rem 1.2rem;
+      border: 1px solid #7C8590;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #CDD6E0;
+      margin-right: 0.75rem;
+    }
+    .links {
+      margin-top: 2rem;
+      color: #7C8590;
+      font-size: 0.9rem;
+    }
+    .links a {
+      color: #7C8590;
+      margin-right: 1.5rem;
+    }
+    .demo-container {
+      margin: 1.5rem 0;
+      border: 1px solid #3B414A;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .demo-container img {
+      width: 100%;
+      display: block;
+    }
+    .demo-caption {
+      color: #7C8590;
+      font-size: 0.8rem;
+      text-align: center;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .decision-states {
+      margin: 1rem 0 1.5rem 0;
+    }
+    .decision-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-allow { background: #3FB950; }
+    .dot-deny { background: #F85149; }
+    .dot-approval { background: #D29922; }
+    .decision-desc {
+      color: #7C8590;
+    }
+    .bench-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+    }
+    .bench-table th, .bench-table td {
+      text-align: left;
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid #3B414A;
+    }
+    .bench-table th {
+      color: #7C8590;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chainwatch</h1>
+  <p class="meta">Runtime control plane for AI agent safety</p>
+
+  <p>
+    AI agents need broad access to tools and data to be useful. But some actions
+    cannot be undone — payments committed, credentials exposed, data destroyed,
+    messages sent. Chainwatch enforces deterministic policy at these irreversible
+    boundaries before the agent crosses them.
+  </p>
+
+  <p>
+    A single Go binary. No ML, no statistics, no prediction.
+    Deterministic rules that block what must be blocked and allow what should pass.
+  </p>
+
+  <div class="demo-container">
+    <img src="https://github.com/ppiankov/chainwatch/releases/latest/download/dogfight-demo.gif" alt="Dogfight demo — AI agent receives hazardous instructions, chainwatch blocks them">
+  </div>
+  <p class="demo-caption">An AI agent receives hazardous instructions. Chainwatch intercepts and blocks every one.</p>
+
+  <h2>Install</h2>
+
+  <pre>go install github.com/ppiankov/chainwatch/cmd/chainwatch@latest</pre>
+
+  <p>Or download a binary from the <a href="https://github.com/ppiankov/chainwatch/releases/latest">latest release</a> (Linux and macOS, amd64 and arm64).</p>
+
+  <pre># macOS (Apple Silicon)
+curl -sL https://github.com/ppiankov/chainwatch/releases/latest/download/chainwatch-darwin-arm64 -o chainwatch
+chmod +x chainwatch
+sudo mv chainwatch /usr/local/bin/
+
+# Linux (amd64)
+curl -sL https://github.com/ppiankov/chainwatch/releases/latest/download/chainwatch-linux-amd64 -o chainwatch
+chmod +x chainwatch
+sudo mv chainwatch /usr/local/bin/</pre>
+
+  <h2>How It Works</h2>
+  <ul>
+    <li>Wrap any command: <code>chainwatch exec -- rm -rf /</code></li>
+    <li>Policy evaluates the action against denylist patterns and risk thresholds</li>
+    <li>Blocked commands are never executed (exit code 77)</li>
+    <li>Allowed commands run normally with an audit trail</li>
+  </ul>
+
+  <div class="decision-states">
+    <div class="decision-row"><span class="dot dot-allow"></span><span>Allow</span><span class="decision-desc">— action is safe, execute normally</span></div>
+    <div class="decision-row"><span class="dot dot-approval"></span><span>Require Approval</span><span class="decision-desc">— operator must approve before execution</span></div>
+    <div class="decision-row"><span class="dot dot-deny"></span><span>Deny</span><span class="decision-desc">— irreversible boundary, block unconditionally</span></div>
+  </div>
+
+  <h2>Integration Modes</h2>
+  <ul>
+    <li><strong>CLI wrapper</strong> — <code>chainwatch exec -- &lt;cmd&gt;</code></li>
+    <li><strong>gRPC server</strong> — <code>chainwatch serve</code> for multi-agent environments</li>
+    <li><strong>HTTP proxy</strong> — <code>chainwatch proxy</code> intercepts agent HTTP traffic</li>
+    <li><strong>LLM intercept</strong> — <code>chainwatch intercept</code> extracts tool calls from streaming responses</li>
+    <li><strong>MCP server</strong> — <code>chainwatch mcp</code> for Claude Desktop</li>
+  </ul>
+
+  <h2>What It Blocks By Default</h2>
+  <ul>
+    <li>Destructive operations — <code>rm -rf</code>, <code>dd if=/dev/zero</code>, <code>mkfs</code></li>
+    <li>Privilege escalation — <code>sudo su</code>, <code>sudo -i</code>, <code>chmod 777</code></li>
+    <li>Code injection — <code>curl | sh</code>, <code>wget | bash</code></li>
+    <li>Credential access — <code>~/.ssh/id_rsa</code>, <code>~/.aws/credentials</code>, <code>.env</code></li>
+    <li>Self-targeting — attempts to kill, overwrite, or reconfigure chainwatch itself</li>
+  </ul>
+
+  <p>All patterns are configurable via YAML. Built-in profiles available for common agent types:
+    clawbot, devin, manus, soc-analyst, data-pipeline.</p>
+
+  <h2>What Chainwatch Is Not</h2>
+  <ul>
+    <li>Not an ML-based anomaly detector — all decisions are deterministic</li>
+    <li>Not a logging or observability layer — enforcement, not detection</li>
+    <li>Not an LLM guardrail for prompt content</li>
+    <li>Not a permissions system — enforces boundaries, not roles</li>
+  </ul>
+
+  <h2>Performance</h2>
+
+  <table class="bench-table">
+    <tr><th>Operation</th><th>Latency</th></tr>
+    <tr><td>Policy evaluation (allow)</td><td>~5 us</td></tr>
+    <tr><td>Denylist match (block)</td><td>~0.2 us</td></tr>
+    <tr><td>Denylist check (1000 patterns)</td><td>~7 us</td></tr>
+    <tr><td>Audit log verify (10K entries)</td><td>~30 ms</td></tr>
+  </table>
+
+  <p>Zero-allocation denylist matching. Compiled regex patterns. Append-only audit log with SHA-256 hash chain.</p>
+
+  <a class="install-link" href="https://github.com/ppiankov/chainwatch">GitHub</a>
+  <a class="install-link" href="https://github.com/ppiankov/chainwatch/releases/latest">Download</a>
+
+  <div class="links">
+    <a href="https://github.com/ppiankov/chainwatch/blob/main/docs/deployment.md">Deployment Guide</a>
+    <a href="https://github.com/ppiankov/chainwatch/blob/main/CHANGELOG.md">Changelog</a>
+    <a href="https://github.com/ppiankov/chainwatch/blob/main/LICENSE">Apache 2.0</a>
+  </div>
+</body>
+</html>
